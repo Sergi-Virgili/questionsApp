@@ -28,3 +28,22 @@ jobs:
       - name: Push Docker image
         if: github.ref == 'refs/heads/main'
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:latest
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.APP_IP }} << EOF
+            docker pull ${{ secrets.DOCKERHUB_PASSWORD }}/quiz-app:latest
+            docker stop quiz-app || true
+            docker rm quiz-app || true
+            docker run -d --name quiz-app \ 
+            -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} \ 
+            -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USER }} \ 
+            -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} \ 
+            -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:latest
+            sudo systemctl reload nginx
+          EOF
