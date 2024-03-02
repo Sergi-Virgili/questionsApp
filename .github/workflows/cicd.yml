@@ -40,10 +40,6 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:latest
             docker stop quiz-app || true
             docker rm quiz-app || true
-            docker run -d --name quiz-app \ 
-            -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} \ 
-            -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USER }} \ 
-            -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} \ 
-            -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:latest
+            docker run -d --name quiz-app -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USER }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:latest
             sudo systemctl reload nginx
           EOF
